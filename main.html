@@ -1,0 +1,55 @@
+<html>
+  <head>
+    <title>Github Notifier</title>
+    <link href="/static/style.css" type="text/css" rel="stylesheet" />
+  </head>
+  <body>
+<p>hi there.</p>
+{% if user %}
+      <div style="float: right; margin-top: -30px;">{{ user.nickname }} | <a href="{{ logout_url }}">Logout</a></div>
+      <p>
+        <form action="/" method="post">
+          <small style="color: #222;">Repo path (eg <u>/mojombo/jekyll</u> ):</small><br />
+          <input type="text" name="repo" style="font-size: 24px; width: 20em;"/><br />
+          <input type="submit" value="Add subscription" style="margin-top: 4px;"/>
+          </form>
+      </p>
+      
+  {% if subscriptions %}
+  <h2>Your subscriptions</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Repo</th>
+        <th>Private key</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for subscription in subscriptions %}
+      <tr>
+        <td>{{ subscription.repo }}</td>
+        <td>{{ subscription.private_key }}</td>
+        <td>
+          <form style="display:inline;" action="/" method="post">
+          <input type="hidden" name="id" value="{{ subscription.key.id }}" />
+          <input type="submit" value="Delete" /></form>
+          </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+     </ul>
+   </p>
+   {% endif %}
+       
+
+{% else %}
+<p>Github Notifier uses your <a href="http://notify.io">notify.io</a> account to send you real-time notifications of Github updates. Login with Google and enter a public or private repo; for private repositories, you'll get an API key for you and your co-conspirators.</p>
+<p>Then enter http://githubnotify.appengine.com as a post-recieve hook.</p>
+
+<p><a id="login-button" href="{{ login_url }}">Login with Google</a></p>
+
+
+{% endif %}
+
+  </body>
+</html>
