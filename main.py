@@ -11,20 +11,20 @@ from google.appengine.api import urlfetch
 from google.appengine.api import mail
 from django.utils import simplejson as json
 
-from xml.dom import minidom
+import logging
 import time, urllib, os, hashlib
 import key
 
-def notify(user, text, title, link=None):
-    params = {'text':text,'title':title, 'icon': 'http://feednotifier.appspot.com/favicon.ico'}
+
+def notify(email, text, title, link=None):
+    params = {'text':text,'title':title, 'icon': 'http://github.com/favicon.ico', 'tags':'sticky', 'sticky':'true'}
     if link:
         params['link'] = link
-    urlfetch.fetch('http://api.notify.io/v1/notify/%s?api_key=%s' % (hashlib.md5(user.email()).hexdigest(), key.api_key), method='POST', payload=urllib.urlencode(params))
+    urlfetch.fetch('http://api.notify.io/v1/notify/%s?api_key=%s' % (hashlib.md5(email).hexdigest(), key.api_key), method='POST', payload=urllib.urlencode(params))
 
 class Subscription(db.Model):
     user = db.UserProperty(auto_current_user_add=True)
     repo = db.StringProperty(required=True)
-    private_repo = db.BooleanProperty()
     private_key = db.StringProperty()
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)
@@ -35,6 +35,8 @@ class MainHandler(webapp.RequestHandler):
         if user:
             logout_url = users.create_logout_url("/")
             subscriptions = Subscription.all().filter('user =', user)
+            
+            temp_key = hashlib.md5(str(time.time()) + hashlib.md5(user.email()).hexdigest() ).hexdigest()[0:15]
         else:
             login_url = users.create_login_url('/')
         self.response.out.write(template.render('main.html', locals()))
@@ -48,34 +50,78 @@ class MainHandler(webapp.RequestHandler):
                 self.redirect('/')
         
         if self.request.get('repo'):
-            repo_url = self.request.get('repo')
-            subscription = Subscription(repo = repo_url, private_key = 'david')
+            repo_url = self.request.get('repo').strip('/')
+            key = self.request.get('key')
+            subscription = Subscription(repo = repo_url, private_key = key)
             subscription.put()
             #taskqueue.add(url='/subscribe', params={'id': feed.key().id()})
 
             self.redirect('/')
         else:
-            self.response.out.write("Enter a feed")
+            self.redirect('/')
             return
 
 
+class CommitHandler(webapp.RequestHandler):
+    
+    def post(self):
+        
+        payload = json.loads(self.request.get('payload'))
+        
+        # get info for title, url of commit
+
+        repo_url_parts = payload['repository']['url'].split('/')
+        repo_title = "%s/%s" % (repo_url_parts[-2],repo_url_parts[-1])
+        
+        commit_count = len(payload['commits'])
+        if commit_count == 0:
+            self.response.out.write('Thanks, github.')
+            return
+        
+        commit_url = payload['commits'][0]['url']
+        commit_message = payload['commits'][0]['message']
+        commit_author = payload['commits'][0]['author']['name']
+        
+        if commit_count == 1:
+            title = 'New commit for %s by %s' % (repo_title, commit_author)
+        else:
+            title = '%s new commits for %s, latest by %s' % (commit_count, repo_title, commit_author)
+            
+        text = "Last commit by %s. Message: %s" % (commit_author, commit_message)
+        
+        if self.request.get('key'):
+            private_key = self.request.get('key')
+            subscriptions = Subscription.all().filter('repo =', repo_title).filter('private_key =', private_key).fetch(100)
+        else:
+            subscriptions = Subscription.all().filter('repo =', repo_title).fetch(100)
+        
+        for subscription in subscriptions:
+            logging.debug('Email %s, title %s' % (subscription.user.email(), title))
+            taskqueue.add(url='/notify', params={'email': subscription.user.email(), 'text':text, 'title':title, 'url': commit_url})
+        
+        self.response.out.write('Thanks, github.')
+
+    def get(self):
+        self.response.out.write('Whoops, github.')
+
+        
 class NotifyHandler(webapp.RequestHandler):
     
     def post(self):
-        private_key = self.request.get('key')
-        payload = json.load(self.request.body)
-        
-        # feed = Feed.get_by_id(int(feed_id))
-        # feed_dom = minidom.parseString(self.request.body.encode('utf-8', 'xmlcharrefreplace'))
-        # for entry in feed_dom.getElementsByTagName('entry'):
-        #     entry_title = entry.getElementsByTagName('title')[0].firstChild
-        #     entry_title = entry_title.data if entry_title else "???"
-        #     notify(feed.user, entry_title, feed.title or feed.url)
+        title = self.request.get('title')
+        text = self.request.get('text')
+        url = self.request.get('url')
+        email = self.request.get('email')
+        notify(email, text, title, url)
+
 
 def main():
+    logging.getLogger().setLevel(logging.DEBUG)
+    
     application = webapp.WSGIApplication([
         ('/', MainHandler), 
-        ('/notify/.*', NotifyHandler),
+        ('/commit', CommitHandler),
+        ('/notify', NotifyHandler)
         ], debug=True)
     wsgiref.handlers.CGIHandler().run(application)
 

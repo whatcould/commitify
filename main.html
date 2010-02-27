@@ -1,34 +1,62 @@
 <html>
   <head>
-    <title>Github Notifier</title>
-    <link href="/static/style.css" type="text/css" rel="stylesheet" />
+    <title>Commitify | Notify.io + Github Commits</title>
+    <link href="/static/base.css" type="text/css" rel="stylesheet" />
   </head>
   <body>
-<p>hi there.</p>
+
+<div class="wrap">
+  <div id="header">
+    <h1><a href="/">Commitify</a></h1>
+    <p class="subhead">Realtime commit notifications with Github and Notify.io</p>
+    <div class="user">
+      {% if user %}
+        {{ user.nickname }} | <a href="{{ logout_url }}">Logout</a>
+      {% else %}
+        <a id="login-button" href="{{ login_url }}">Login with Google</a>  
+      {% endif %}
+    </div>
+</div>
+<div id="content">
+
 {% if user %}
-      <div style="float: right; margin-top: -30px;">{{ user.nickname }} | <a href="{{ logout_url }}">Logout</a></div>
-      <p>
-        <form action="/" method="post">
-          <small style="color: #222;">Repo path (eg <u>/mojombo/jekyll</u> ):</small><br />
-          <input type="text" name="repo" style="font-size: 24px; width: 20em;"/><br />
-          <input type="submit" value="Add subscription" style="margin-top: 4px;"/>
-          </form>
-      </p>
-      
+<div id="add_form">
+  <h2>Add a subscription</h2>
+  <form action="/" method="post">
+    <p>
+      <label>Repository (eg <u>mojombo/jekyll</u> ):</label>
+      <input type="text" name="repo" autocomplete="false" />
+    </p>
+    <h4>Private repositories</h4>
+    <p>If your repository is private, you&#8217;ll want to add a private key, which is passed as a parameter with your github post-receive hook.</p>
+    <p>If you already have a key for your private repo, enter it here. Or, click to get a pre-generated key.</p>
+    </p>
+    <p>
+      <label>Private key:</label>
+      <input type="text" name="key" autocomplete="false" id="subscription_key" /> <a href="#" class="action" onclick="subscription_key.value = '{{ temp_key }}'" />Give me a pre-generated key</a></p>
+    </p>
+    <p><input type="submit" value="Add subscription" /></p>
+  </form>
+</div>
+
   {% if subscriptions %}
+  <div id="subscriptions">
   <h2>Your subscriptions</h2>
   <table>
     <thead>
       <tr>
-        <th>Repo</th>
+        <th>Repository</th>
         <th>Private key</th>
+        <th>Post-receive URL</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
       {% for subscription in subscriptions %}
       <tr>
-        <td>{{ subscription.repo }}</td>
+        <td><a href="http://github.com/{{ subscription.repo }}">{{ subscription.repo }}</strong></td>
         <td>{{ subscription.private_key }}</td>
+        <td>http://commitify.appspot.com/commit{% if subscription.private_key %}?key={{ subscription.private_key}}{% endif %}</td>
         <td>
           <form style="display:inline;" action="/" method="post">
           <input type="hidden" name="id" value="{{ subscription.key.id }}" />
@@ -37,19 +65,33 @@
       </tr>
       {% endfor %}
     </tbody>
-     </ul>
-   </p>
+    </table>
+   </div>
    {% endif %}
        
 
 {% else %}
-<p>Github Notifier uses your <a href="http://notify.io">notify.io</a> account to send you real-time notifications of Github updates. Login with Google and enter a public or private repo; for private repositories, you'll get an API key for you and your co-conspirators.</p>
-<p>Then enter http://githubnotify.appengine.com as a post-recieve hook.</p>
+<div class="intro">
+<h2>What&#8217;s this?</h2>
+<p>Commitify uses your <a href="http://notify.io">notify.io</a> account to send you real-time notifications of Github commits.</p>
+<p>Here&#8217;s what you do:</p>
+<ol>
+  <li><a id="login-button" href="{{ login_url }}">Login with Google</a></li>
+  <li>Enter a public or private repository</li>
+  <li>Get the owner of the repository to add a post-recieve hook to <u>http://commitify.appspot.com/commit</u>.</li>
+</ol>
+<p>For private repositories, you'll need to add a private key for you and your co-conspirators. The hook URL will then be <u>http://commitify.appspot.com/commit?key=yourkey</u></p>
 
-<p><a id="login-button" href="{{ login_url }}">Login with Google</a></p>
-
+</div>
 
 {% endif %}
 
-  </body>
+</div>
+</div>
+
+<div id="footer">
+<p>by <a href="http://whatcould.com">whatcould</a>, with ideas from <a href="http://notify.io">notify.io</a>, hosted on <a href="http://code.google.com/appengine/">Google AppEngine</a>. Of course, the <a href="http://github.com/whatcould/commitify">source</a>.  
+</div>
+
+</body>
 </html>
