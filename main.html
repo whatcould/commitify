@@ -25,7 +25,7 @@
   <form action="/" method="post">
     <p>
       <label>Repository (eg <u>mojombo/jekyll</u> ):</label>
-      <input type="text" name="repo" autocomplete="false" />
+      <input type="text" name="repo" autocomplete="off" />
     </p>
     <h4>Private repositories</h4>
     <p>If your repository is private, you&#8217;ll want to add a private key, which is passed as a parameter with your github post-receive hook.</p>
@@ -33,7 +33,7 @@
     </p>
     <p>
       <label>Private key:</label>
-      <input type="text" name="key" autocomplete="false" id="subscription_key" /> <a href="#" class="action" onclick="subscription_key.value = '{{ temp_key }}'" />Give me a pre-generated key</a></p>
+      <input type="text" name="key" autocomplete="off" id="subscription_key" /> <a href="#" class="action" onclick="subscription_key.value = '{{ temp_key }}'" />Give me a pre-generated key</a></p>
     </p>
     <p><input type="submit" value="Add subscription" /></p>
   </form>
@@ -78,9 +78,9 @@
 <ol>
   <li><a id="login-button" href="{{ login_url }}">Login with Google</a></li>
   <li>Enter a public or private repository</li>
-  <li>Get the owner of the repository to add a post-recieve hook to <u>http://commitify.appspot.com/commit</u>.</li>
+  <li>Get the owner of the repository to add a post-recieve hook to <u>http://commitify.appspot.com/commit</u></li>
 </ol>
-<p>For private repositories, you'll need to add a private key for you and your co-conspirators. The hook URL will then be <u>http://commitify.appspot.com/commit?key=yourkey</u></p>
+<p class="sidenote">For private repositories, you and your co-conspirators will need to add a private key when you subscribe. The webhook URL will then be <u>http://commitify.appspot.com/commit<b>?key=yourkey</b></u></p>
 
 </div>
 

@@ -100,6 +100,9 @@ border-radius: 10px;
 -webkit-box-shadow: 0 0 7px #777;
 box-shadow: 0 0 7px #777;
 }
+p.sidenote {
+font-size: 1.1em;
+}
 
 /* Header
 =========== */

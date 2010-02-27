@@ -78,9 +78,9 @@ class CommitHandler(webapp.RequestHandler):
             self.response.out.write('Thanks, github.')
             return
         
-        commit_url = payload['commits'][0]['url']
-        commit_message = payload['commits'][0]['message']
-        commit_author = payload['commits'][0]['author']['name']
+        commit_url = payload['commits'][-1]['url']
+        commit_message = payload['commits'][-1]['message']
+        commit_author = payload['commits'][-1]['author']['name']
         
         if commit_count == 1:
             title = 'New commit for %s by %s' % (repo_title, commit_author)
