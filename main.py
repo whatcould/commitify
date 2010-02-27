@@ -17,7 +17,7 @@ import key
 
 
 def notify(email, text, title, link=None):
-    params = {'text':text,'title':title, 'icon': 'http://github.com/favicon.ico', 'tags':'sticky', 'sticky':'true'}
+    params = {'text':text,'title':title, 'icon': 'http://commitify.appspot.com/static/github_favicon_white.png', 'tags':'sticky', 'sticky':'true'}
     if link:
         params['link'] = link
     urlfetch.fetch('http://api.notify.io/v1/notify/%s?api_key=%s' % (hashlib.md5(email).hexdigest(), key.api_key), method='POST', payload=urllib.urlencode(params))
@@ -83,11 +83,11 @@ class CommitHandler(webapp.RequestHandler):
         commit_author = payload['commits'][-1]['author']['name']
         
         if commit_count == 1:
-            title = 'New commit for %s by %s' % (repo_title, commit_author)
+            title = 'Commit for %s by %s' % (repo_title, commit_author)
+            text = "by %s. Message: %s" % (commit_author, commit_message)
         else:
-            title = '%s new commits for %s, latest by %s' % (commit_count, repo_title, commit_author)
-            
-        text = "Last commit by %s. Message: %s" % (commit_author, commit_message)
+            title = '%s commits for %s, latest by %s' % (commit_count, repo_title, commit_author)
+            text = "Last commit by %s. Message: %s" % (commit_author, commit_message)
         
         if self.request.get('key'):
             private_key = self.request.get('key')
