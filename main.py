@@ -34,7 +34,7 @@ class MainHandler(webapp.RequestHandler):
         user = users.get_current_user()
         if user:
             logout_url = users.create_logout_url("/")
-            subscriptions = Subscription.all().filter('user =', user)
+            subscriptions = Subscription.all().filter('user =', user).order('repo')
             
             temp_key = hashlib.md5(str(time.time()) + hashlib.md5(user.email()).hexdigest() ).hexdigest()[0:15]
         else:
@@ -54,7 +54,6 @@ class MainHandler(webapp.RequestHandler):
             key = self.request.get('key')
             subscription = Subscription(repo = repo_url, private_key = key)
             subscription.put()
-            #taskqueue.add(url='/subscribe', params={'id': feed.key().id()})
 
             self.redirect('/')
         else:
