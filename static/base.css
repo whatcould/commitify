@@ -5,6 +5,7 @@ font-family: "HelveticaNeue", Arial, Helvetica, Sans-Serif;
 margin: 0;
 background-color: #fff;
 border-top: 4px solid #222;
+color: #333;
 }
 
 div, ul, li, p,
@@ -92,14 +93,14 @@ font-size: 1.2em;
 margin: 1em auto;
 padding: 1em;
 background-color: #fff;
-border: 1px solid #00CC00;
 -moz-border-radius: 10px;
 -webkit-border-radius: 10px;
 border-radius: 10px;
--moz-box-shadow: 0 0 7px #777;
--webkit-box-shadow: 0 0 7px #777;
-box-shadow: 0 0 7px #777;
+-moz-box-shadow: 0 0 7px #999;
+-webkit-box-shadow: 0 0 7px #999;
+box-shadow: 0 0 7px #999;
 }
+
 p.sidenote {
 font-size: 1.1em;
 }
@@ -110,7 +111,7 @@ font-size: 1.1em;
 margin: .5em 0 2em;
 background-color: #fff;
 padding: 0 0 .5em;
-border-bottom: 4px solid #146F3A;
+border-bottom: 1px solid #ccc;
 position: relative;
 }
 
@@ -119,15 +120,15 @@ display: block;
 background: url(/static/icon_32.png) 0 center no-repeat;
 padding: 5px 0 5px 40px;
 width: 10em;
-font-size: 28px;
+font-size: 25px;
 text-decoration: none;
-color: #222;
+color: #444;
 }
 
 #header p {
 padding-left: 40px;
 font-size: 1.3em;
-color: #146F3A;
+color: #444;
 margin-top: -.3em;
 }
 #header .user {

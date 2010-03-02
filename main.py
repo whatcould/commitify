@@ -8,6 +8,7 @@ from google.appengine.api import users
 from google.appengine.ext.webapp import template
 from google.appengine.ext import db
 from google.appengine.api import urlfetch
+
 from google.appengine.api import mail
 from django.utils import simplejson as json
 
@@ -17,10 +18,18 @@ import key
 
 
 def notify(email, text, title, link=None):
-    params = {'text':text,'title':title, 'icon': 'http://commitify.appspot.com/static/github_favicon_white.png', 'tags':'sticky', 'sticky':'true'}
+    params = {'text':text,'title':title, 'icon': 'http://commitify.appspot.com/icons/github_favicon_white.png', 'tags':'sticky', 'sticky':'true'}
     if link:
         params['link'] = link
-    urlfetch.fetch('http://api.notify.io/v1/notify/%s?api_key=%s' % (hashlib.md5(email).hexdigest(), key.api_key), method='POST', payload=urllib.urlencode(params))
+    count = 0
+    while True:
+        try:
+            return urlfetch.fetch('http://api.notify.io/v1/notify/%s?api_key=%s' % (hashlib.md5(email).hexdigest(), key.api_key), method='POST', payload=urllib.urlencode(params))
+        except urlfetch.DownloadError:
+            count += 1
+            logging.debug('DownloadError on fetch: %s, %s' % (email, title))
+            if count == 3:
+                raise
 
 class Subscription(db.Model):
     user = db.UserProperty(auto_current_user_add=True)
@@ -74,12 +83,14 @@ class CommitHandler(webapp.RequestHandler):
         
         commit_count = len(payload['commits'])
         if commit_count == 0:
+            logging.debug('No commits for push to repo: %s' % repo_title)
             self.response.out.write('Thanks, github.')
             return
         
         commit_url = payload['commits'][-1]['url']
         commit_message = payload['commits'][-1]['message']
         commit_author = payload['commits'][-1]['author']['name']
+        logging.debug('Commit url/author: %s - %s' % (commit_url, commit_author))
         
         if commit_count == 1:
             title = 'Commit for %s by %s' % (repo_title, commit_author)
@@ -93,9 +104,11 @@ class CommitHandler(webapp.RequestHandler):
             subscriptions = Subscription.all().filter('repo =', repo_title).filter('private_key =', private_key).fetch(100)
         else:
             subscriptions = Subscription.all().filter('repo =', repo_title).fetch(100)
-        
+        if len(subscriptions) == 0:
+            logging.debug('No subscriptions for push to repo: %s' % repo_title)
+            
         for subscription in subscriptions:
-            logging.debug('Email %s, title %s' % (subscription.user.email(), title))
+            logging.debug('Email: %s / title: %s' % (subscription.user.email(), title))
             taskqueue.add(url='/notify', params={'email': subscription.user.email(), 'text':text, 'title':title, 'url': commit_url})
         
         self.response.out.write('Thanks, github.')
@@ -107,10 +120,10 @@ class CommitHandler(webapp.RequestHandler):
 class NotifyHandler(webapp.RequestHandler):
     
     def post(self):
-        title = self.request.get('title')
-        text = self.request.get('text')
-        url = self.request.get('url')
         email = self.request.get('email')
+        text = self.request.get('text')
+        title = self.request.get('title')
+        url = self.request.get('url')
         notify(email, text, title, url)
 
 
