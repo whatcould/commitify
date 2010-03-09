@@ -93,5 +93,19 @@
 <p>by <a href="http://whatcould.com">whatcould</a>, with ideas from <a href="http://notify.io">notify.io</a>, hosted on <a href="http://code.google.com/appengine/">Google AppEngine</a>. Of course, the <a href="http://github.com/whatcould/commitify">source</a>.  
 </div>
 
+{% if not user %}
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-15141189-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+{% endif %}
+
 </body>
 </html>
