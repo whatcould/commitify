@@ -28,9 +28,8 @@
       <input type="text" name="repo" autocomplete="off" />
     </p>
     <h4>Private repositories</h4>
-    <p>If your repository is private, you&#8217;ll want to add a private key, which is passed as a parameter with your github post-receive hook.</p>
-    <p>You can use any arbitrary string. If you already have a key for your private repo, enter it here. Or, click to get a pre-generated key.</p>
-    </p>
+    <p>If your repository is private, you&#8217;ll want to enter a private key, which is passed as a parameter with your Github service hook.</p>
+    <p>You can use any arbitrary string. If the owner of your private repo already gave you a key, enter it here. Or, click to get a pre-generated key.</p>
     <p>
       <label>Private key:</label>
       <input type="text" name="key" autocomplete="off" id="subscription_key" /> <a href="#" class="action" onclick="subscription_key.value = '{{ temp_key }}'" />Give me a pre-generated key</a></p>
@@ -47,7 +46,6 @@
       <tr>
         <th>Repository</th>
         <th>Private key</th>
-        <th>Post-receive URL</th>
         <th></th>
       </tr>
     </thead>
@@ -56,11 +54,10 @@
       <tr>
         <td><a href="http://github.com/{{ subscription.repo }}">{{ subscription.repo }}</strong></td>
         <td>{{ subscription.private_key }}</td>
-        <td>http://commitify.appspot.com/commit{% if subscription.private_key %}?key={{ subscription.private_key}}{% endif %}</td>
         <td>
           <form style="display:inline;" action="/" method="post">
           <input type="hidden" name="id" value="{{ subscription.key.id }}" />
-          <input type="submit" value="Delete" /></form>
+          <input type="submit" value="Unsubscribe" /></form>
           </td>
       </tr>
       {% endfor %}
@@ -78,9 +75,9 @@
 <ol>
   <li><a id="login-button" href="{{ login_url }}">Login with Google</a></li>
   <li>Enter a public or private repository</li>
-  <li>Get the owner of the repository to add a post-recieve hook to <u>http://commitify.appspot.com/commit</u></li>
+  <li>Ask the owner of the repository to activate the Commitify service hook</li>
 </ol>
-<p class="sidenote">For private repositories, you and your co-conspirators will need to add a private key when you subscribe. The webhook URL will then be <u>http://commitify.appspot.com/commit<b>?key=yourkey</b></u></p>
+<p class="sidenote">For private repositories, you and your co-conspirators will need to add a private key when you subscribe.</p>
 
 </div>
 
