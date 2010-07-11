@@ -20,7 +20,7 @@
 <div id="content">
 
 {% if user %}
-<div id="add_form">
+<div id="add_form" class="section">
   <h2>Add a subscription</h2>
   <form action="/" method="post">
     <p>
@@ -39,7 +39,7 @@
 </div>
 
   {% if subscriptions %}
-  <div id="subscriptions">
+  <div id="subscriptions" class="section">
   <h2>Your subscriptions</h2>
   <table>
     <thead>
@@ -64,6 +64,16 @@
     </tbody>
     </table>
    </div>
+  
+  <div id="user_profile" class="section">
+  <h2>Preferences</h2>
+   <p>If you want to exclude your own commits from your notifications, add your git-config email here.</p>
+   <form style="display:inline;" action="/user-profile" method="post">
+     <input type="text" name="git_email" value="{{ git_email }}" size="40" />
+     <input type="submit" value="Save" />
+    </form>
+   </div>
+   
    {% endif %}
        
 
@@ -75,7 +85,7 @@
 <ol>
   <li><a id="login-button" href="{{ login_url }}">Login with Google</a></li>
   <li>Enter a public or private repository</li>
-  <li>Ask the owner of the repository to activate the Commitify service hook</li>
+  <li>Ask the owner of the repository to activate the Commitify service hook (it&8217;s just a checkbox!)</li>
 </ol>
 <p class="sidenote">For private repositories, you and your co-conspirators will need to add a private key when you subscribe.</p>
 

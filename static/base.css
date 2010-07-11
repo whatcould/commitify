@@ -169,7 +169,7 @@ form input[type=submit] {
 font-size: 1.2em;
 }
 
-#add_form {
+.section {
 margin-bottom: 3em;
 }
 

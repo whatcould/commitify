@@ -38,13 +38,21 @@ class Subscription(db.Model):
     created = db.DateTimeProperty(auto_now_add=True)
     updated = db.DateTimeProperty(auto_now=True)
 
+class Profile(db.Model):
+    user = db.UserProperty(auto_current_user_add=True);
+    git_email = db.StringProperty()
+    
 class MainHandler(webapp.RequestHandler):
     def get(self):
         user = users.get_current_user()
         if user:
             logout_url = users.create_logout_url("/")
             subscriptions = Subscription.all().filter('user =', user).order('repo')
-            
+            profile = Profile.get_by_key_name(user.email())
+            if profile:
+                git_email = profile.git_email
+            else:
+                git_email = ''
             temp_key = hashlib.md5(str(time.time()) + hashlib.md5(user.email()).hexdigest() ).hexdigest()[0:15]
         else:
             login_url = users.create_login_url('/')
@@ -90,6 +98,8 @@ class CommitHandler(webapp.RequestHandler):
         commit_url = payload['commits'][-1]['url']
         commit_message = payload['commits'][-1]['message']
         commit_author = payload['commits'][-1]['author']['name']
+        commit_email = payload['commits'][-1]['author']['email']
+        
         logging.debug('Commit url/author: %s - %s' % (commit_url, commit_author))
         
         if commit_count == 1:
@@ -106,17 +116,26 @@ class CommitHandler(webapp.RequestHandler):
             subscriptions = Subscription.all().filter('repo =', repo_title).fetch(100)
         if len(subscriptions) == 0:
             logging.debug('No subscriptions for push to repo: %s' % repo_title)
-            
+        
         for subscription in subscriptions:
             logging.debug('Email: %s / title: %s' % (subscription.user.email(), title))
-            taskqueue.add(url='/notify', params={'email': subscription.user.email(), 'text':text, 'title':title, 'url': commit_url})
+            user_profile = Profile.get_by_key_name(subscription.user.email())
+            if user_profile and commit_email != user_profile.git_email:
+                taskqueue.add(url='/notify', params={'email': subscription.user.email(), 'text':text, 'title':title, 'url': commit_url})
         
         self.response.out.write('Thanks, github.')
 
     def get(self):
         self.response.out.write('Whoops, github.')
 
-        
+class UserProfileHandler(webapp.RequestHandler):
+    def post(self):
+        user = users.get_current_user()
+        user_profile = Profile.get_or_insert(user.email())
+        user_profile.git_email = self.request.get('git_email')
+        user_profile.put()
+        self.redirect('/')
+      
 class NotifyHandler(webapp.RequestHandler):
     
     def post(self):
@@ -126,12 +145,12 @@ class NotifyHandler(webapp.RequestHandler):
         url = self.request.get('url')
         notify(email, text, title, url)
 
-
 def main():
     logging.getLogger().setLevel(logging.DEBUG)
     
     application = webapp.WSGIApplication([
-        ('/', MainHandler), 
+        ('/', MainHandler),
+        ('/user-profile', UserProfileHandler),
         ('/commit', CommitHandler),
         ('/notify', NotifyHandler)
         ], debug=True)
